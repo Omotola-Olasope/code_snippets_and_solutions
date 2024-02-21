@@ -28,10 +28,18 @@ function sendWeeklyDataEmail() {
         Utilities.formatDate(new Date(row[0]), timeZone, "yyyy-MM-dd HH:mm:ss") <= lastWeekEnd
     );
 
-    // Clear and write data to the target sheet
-    targetSheet.clearContents();
-    targetSheet.getRange(1, 1, filteredData.length, filteredData[0].length).setValues(filteredData.map(row => row.map(value => value.toString()))); // change all data to string to avoing timezone issues in date
+    // Optimize data before writing to the target sheet
+    const optimizedData = filteredData.map(row => {
+        // Merge values in the 10th and 11th column
+        row[9] = row[9] + " " + row[10];
 
+        // Select only specific columns (2, 3, 4, 5, 6, 7, 8, 9, 10, and 13)
+        return [row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[12]]; 
+    });
+
+    // Clear and write optimized data to the target sheet
+    targetSheet.clearContents();
+    targetSheet.getRange(1, 1, optimizedData.length, optimizedData[0].length).setValues(optimizedData.map(row => row.map(value => value.toString()))); // change all data to string to avoing timezone issues in date
 
     // Create attachment from target sheet
     const csvString = targetSheet.getRange(1, 1, targetSheet.getLastRow(), targetSheet.getLastColumn()).getValues().map(row => row.join(',')).join('\n');
@@ -57,3 +65,5 @@ function createTrigger() {
         .atHour(7)
         .create();
 }
+
+
